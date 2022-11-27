@@ -24,7 +24,7 @@ START_OPTION_md = Markdown("""
 
 1. Press 1 to regiter a book
 2. Press 2 to Mint a book
-3. Press 3 to list minted books
+3. Press 3 to list minted books (TODO)
 """)
 
 
@@ -46,11 +46,14 @@ def startApp():
             break
         console.clear()
         if action==1:
+            # Register book
             console.print(Markdown( author.START_AUTHOR_md))
             pdf_path,mint_price = author.read_inputs()
             author.register_book(pdf_path,mint_price)
         if action==2:
-            pass
+            # Mint Book
+            book_id, private_key = reader.read_inputs()
+            console.log("mint hash : ",reader.mint_book(book_id=book_id, private_key=private_key))
         if action==3:
             pass
             
@@ -59,12 +62,5 @@ def startApp():
 
 if __name__=="__main__":
     startApp()
-    # msg = "test_msg"
-    # private_key = '793f741086e9b0b87dee635660b671db2e60e98d1e87e22d96be176cb757618a'
-    # encrypt_hex = utils.encrypt_nacl(utils.export_public_key(private_key_hex=private_key),bytes(msg.encode())).hex()
-    # print(encrypt_hex)
-    # # print(codecs.decode(encrypt_hex,'hex_codec'))
-    # decode_text = utils.decrypt_nacl(bytes.fromhex(private_key),codecs.decode(encrypt_hex,'hex_codec'))
-    # print(decode_text)
     
 

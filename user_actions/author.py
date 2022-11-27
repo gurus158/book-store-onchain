@@ -11,9 +11,8 @@ Hi Author!, To register a book on book-store follwong steps required:
 """
 
 def read_inputs():
-    # private_key = '6a7505b3f79a121779f307dacf8e23e1b7b52f87749211ad6518e6a606f0ac77'#input("Enter your private key: ")
-    pdf_path = '/home/gurdeep/Downloads/Advanced Python Programming ( PDFDrive ).pdf' #input("Enter you book path: ")
-    mint_price = 100000000000000#int(input("Enter price of book(In Wei): "))
+    pdf_path = input("Enter you book path: ")
+    mint_price = int(input("Enter price of book(In Wei): "))
     print( pdf_path, mint_price)
     return pdf_path,mint_price
 

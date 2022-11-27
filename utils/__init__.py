@@ -1,8 +1,8 @@
 """Module for encryption and decryption compatible with MetaMask."""
 from base64 import a85decode, a85encode
-from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfFileReader, PdfFileWriter, PdfReader, PdfWriter
 import requests
-
+import json
 from nacl.public import Box, PrivateKey, PublicKey
 from dotenv import dotenv_values
 
@@ -68,11 +68,10 @@ def upload_data_on_ipfs(data):
         return None
     return METADATA_ENDPOINT.format(response.json()['cid'])
 
-def upload_copy_on_ipfs(pdf_path:str,password:str) -> str:
+def upload_book_on_ipfs(pdf_path:str,password:str) -> str:
     try:
         with open(pdf_path, "rb") as in_file:
             input_pdf = PdfFileReader(in_file)
-
             output_pdf = PdfFileWriter()
             output_pdf.appendPagesFromReader(input_pdf)
             output_pdf.encrypt(password)
@@ -87,6 +86,40 @@ def upload_copy_on_ipfs(pdf_path:str,password:str) -> str:
     except Exception as e:
         print(str(e))
         return None
+
+def upload_user_copy(ipfs_link,password):
+    response = requests.get(ipfs_link)
+    book_metadata = response.json()
+    print(book_metadata)
+    pdf_uri = book_metadata["book_link"]
+    response = requests.get(pdf_uri)
+    if response.status_code != 200:
+        print("getting pdf from ipfs link failed")
+        return None
+    open("mint_org_encrypted.pdf", "wb").write(response.content)
+    reader = PdfReader("mint_org_encrypted.pdf")
+    writer = PdfWriter()
+    if reader.is_encrypted:
+        reader.decrypt(config["APP_PASSWORD"])
+
+    for page in reader.pages:
+        writer.add_page(page)
+    if isinstance(password, bytes):
+        password = password.decode()
+    writer.encrypt(password)
+    with open("mint_copy_user.pdf",'wb') as f:
+        writer.write(f)
+    
+    copy_book_uri = upload_data_on_ipfs(open("mint_copy_user.pdf",'rb'))
+    book_metadata_dict = {
+        "name" : book_metadata["name"],
+        "image_url":book_metadata["image_url"],
+        "description": book_metadata["description"],
+        "book_link": copy_book_uri
+    }
+    book_metadata = json.dumps(book_metadata_dict,sort_keys=True, default=str)
+    print(book_metadata)
+    return upload_data_on_ipfs(data=book_metadata)
 
 def create_book_image(book_name) -> str:
     x= random.randrange(30,100)
